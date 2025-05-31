@@ -15,3 +15,12 @@ declare module "next-auth" {
     } & DefaltSession['user'];
   }
 }
+
+declare module "next-auth/jwt" {
+  interface JWT{
+    _id?: string;
+    isVerified?: boolean;
+    isAcceptingMessages?: boolean;
+    username?: string;
+  }
+}
