@@ -24,7 +24,7 @@ export async function POST(request: Request){
                 message: [...usernameErrors, ...codeErrors].join(', ') || "Invalid request body"
             }, {status:400})
         }
-       const {username, code} = await request.json()
+       const {username, code} = result.data;
        
        const decodedUsername = decodeURIComponent(username);
        const user = await UserModel.findOne({username: decodedUsername})
