@@ -1,20 +1,51 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
-import { useSession, signIn, signOut } from "next-auth/react"
+import {zodResolver} from "@hookform/resolvers/zod"
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import {z} from "zod";
+import { useDebounceValue } from 'usehooks-ts'
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { signUpSchema } from "@/schemas/signUpSchema";
+import axios from 'axios';
+import { de } from "zod/v4/locales";
+const Page = ()=>{
+  const [username , setusername] = useState("");
+  const [usernameMessage, setUsernameMessage] = useState("");
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const debouncedUsername = useDebounceValue(username , 300);
+ const router = useRouter();
 
-export default function Component() {
-  const { data: session } = useSession()
-  if (session) {
-    return (
-      <>
-        Signed in as {session.user.email} <br />
-        <button onClick={() => signOut()}>Sign out</button>
-      </>
-    )
+ //zod implementation
+ const from = useForm<z.infer<typeof signUpSchema>>({
+  resolver:zodResolver(signUpSchema),
+  defaultValues:{
+    username:"",
+    email:"",
+    password:"",
   }
+ })
+
+ useEffect(()=>{
+  const checkUsernameUnique = async()=>{
+    if(debouncedUsername){
+      setIsCheckingUsername(true)
+      setUsernameMessage("")
+      try{
+        const response = await axios.get(`/api/check-username-unique?username=${debouncedUsername}`)
+      console.log(response);
+      setUsernameMessage(response.data.message);
+    }catch(error){
+
+    }
+  }
+ }}, [debouncedUsername]);
   return (
-    <>
-      Not signed in <br />
-      <button className="bg-cyan-500 px-3 py-1 m-4 rounded text-white cursor-pointer" onClick={() => signIn()}>Sign in</button>
-    </>
+    <div>
+    pagew
+    </div>
   )
 }
+export default Page;
