@@ -1,198 +1,119 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useForm, FormProvider, SubmitHandler } from "react-hook-form";
+import {  useState } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useDebounceValue } from "usehooks-ts";
+
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { signUpSchema } from "@/schemas/signUpSchema";
-import axios, { AxiosError } from "axios";
-import { ApiResponse } from "@/types/ApiResponse";
+
+
 import {
+  Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
+import { signInSchema } from "@/schemas/signInSchema";
+import { signIn } from "next-auth/react";
 
 const Page = () => {
-  const [username, setUsername] = useState("");
-  const [usernameMessage, setUsernameMessage] = useState("");
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const debouncedUsername = useDebounceValue(username, 300);
+
+ 
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof signUpSchema>>({
-    resolver: zodResolver(signUpSchema),
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
     defaultValues: {
-      username: "",
-      email: "",
+      identifier: "",
       password: "",
     },
   });
 
-  const { handleSubmit, control, setValue } = form;
-
-  // Check username uniqueness
-  useEffect(() => {
-    const checkUsernameUnique = async () => {
-      if (debouncedUsername) {
-        setIsCheckingUsername(true);
-        setUsernameMessage("");
-        try {
-          const response = await axios.get<ApiResponse>(
-            `/api/check-username-unique?username=${debouncedUsername}`
-          );
-          setUsernameMessage(response.data.message);
-        } catch (error) {
-          const axiosError = error as AxiosError<ApiResponse>;
-          setUsernameMessage(
-            axiosError.response?.data.message ||
-              "An error occurred while checking username"
-          );
-        } finally {
-          setIsCheckingUsername(false);
-        }
-      }
-    };
-    checkUsernameUnique();
-  }, [debouncedUsername]);
-
-  // Form submission
-  const onSubmit: SubmitHandler<z.infer<typeof signUpSchema>> = async (
-    data
-  ) => {
-    setIsSubmitting(true);
-    try {
-      const response = await axios.post<ApiResponse>("/api/sign-up", data);
-      toast(response.data.success ? "Success" : "Error", {
-        description: response.data.message,
-      });
-      router.replace(`/verify/${username}`);
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast.error(axiosError.response?.data.message || "Something went wrong");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+   const result =  await signIn('credentials',{
+      redirect:false,
+      identifier:data.identifier,
+      password:data.password
+    })
+  if(result?.error){
+    toast.error(result.error);
+  }
+  if(result?.url){
+    router.replace('/dashboard');
+  }
   };
 
   return (
-    <div className="max-w-[95%] md:max-w-[70%] mx-auto px-5">
-      <div className="flex justify-center items-center h-screen py-10">
-        <div className="w-full">
-         
-          <div className="mb-5 space-y-2 text-center">
-            <h2 className="text-2xl font-semibold">Hi, Create Your Account 👋</h2>
-            <p className="text-gray-600 text-sm">
-              Enter details to create your account
-            </p>
-          </div>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
+            Join Magical Message
+          </h1>
+          <p className="mb-4">Sign in to start your anonymous adventure</p>
+        </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            
 
-          <FormProvider {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* Username */}
-              <div>
-                <label className="text-sm">Username</label>
-                <FormField
-                  control={control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel />
-                      <Input
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          setUsername(e.target.value);
-                        }}
-                      />
-                      {isCheckingUsername && (
-                        <p className="text-xs text-blue-500 flex items-center gap-1">
-                          <Loader2 className="animate-spin" size={14} /> Checking...
-                        </p>
-                      )}
-                      {usernameMessage && (
-                        <p className="text-xs text-gray-500">{usernameMessage}</p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <FormField
+              control={form.control}
+              name="identifier"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email/Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="email/username" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              {/* Email */}
-              <div>
-                <label className="text-sm">Email</label>
-                <FormField
-                  control={control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel />
-                      <Input {...field} value={field.value || ""} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              {/* Password */}
-              <div>
-                <label className="text-sm">Password</label>
-                <FormField
-                  control={control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel />
-                      <Input
-                        {...field}
-                        type="password"
-                        value={field.value || ""}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <Button
+              type="submit"
+              className="w-full flex justify-center items-center cursor-pointer"
+            >
+              Signin
+            </Button>
+          </form>
+        </Form>
 
-              <div>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="animate-spin mr-2" size={16} /> Creating...
-                    </>
-                  ) : (
-                    "Sign Up"
-                  )}
-                </Button>
-                <p className="text-center text-sm mt-4">
-                  Already have an account?{" "}
-                  <Link
-                    href="/sign-in"
-                    className="text-primary-500 font-semibold"
-                  >
-                    Login Now
-                  </Link>
-                </p>
-              </div>
-            </form>
-          </FormProvider>
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+  Don't have an account?{" "}
+  <Link
+    href="/sign-up"
+    className="text-teal-600 hover:text-teal-800 font-medium transition-colors duration-300"
+  >
+    Create a new account
+  </Link>
+</p>
+
         </div>
       </div>
     </div>

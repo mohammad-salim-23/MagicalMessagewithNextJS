@@ -30,7 +30,7 @@ const Page = () => {
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const debounced= useDebounceCallback(setUsername, 300);
+  const debounced= useDebounceCallback(setUsername, 500);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
@@ -118,7 +118,7 @@ const Page = () => {
                     <p className="text-xs text-blue-600">Checking username...</p>
                   )}
                   {usernameMessage && !isCheckingUsername && (
-                    <p className="text-xs text-green-600">{usernameMessage}</p>
+                    <p className={`text-xs ${usernameMessage=== "Username is already taken"? "text-red-600":"text-green-600"}`}>{usernameMessage}</p>
                   )}
                   
                   <FormMessage />

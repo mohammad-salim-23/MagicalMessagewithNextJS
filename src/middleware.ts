@@ -15,12 +15,12 @@ export async function middleware(request: NextRequest) {
  )){
      return NextResponse.redirect(new URL('/dashboard', request.url))
  }else{
-  if(
-    url.pathname.startsWith('/dashboard')
-    // url.pathname.startsWith('/verify') 
-  ){
-    return NextResponse.redirect(new URL('/sign-in', request.url));
-  }
+  // if(
+  //   // url.pathname.startsWith('/dashboard')
+  //   // url.pathname.startsWith('/verify') 
+  // ){
+  //   return NextResponse.redirect(new URL('/sign-in', request.url));
+  // }
   return NextResponse.next();
 
 
