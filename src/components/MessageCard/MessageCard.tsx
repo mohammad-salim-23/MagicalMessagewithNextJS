@@ -22,8 +22,24 @@ import {
 } from "@/components/ui/alert-dialog"
 import { X } from "lucide-react";
 import { Button } from "../ui/button";
+import { Message } from "@/model/User";
+import axios from "axios";
+import { ApiResponse } from "@/types/ApiResponse";
+import { toast } from "sonner";
 
-export const MessageCard = () => {
+
+type MessageCardProps = {
+    message: Message;
+    onMessageDelete: (messageId: string)=> void
+}
+export const MessageCard = ({message, onMessageDelete}: MessageCardProps) => {
+  
+ const handleDeleteConfirm = async()=>{
+   const response=await axios.delete<ApiResponse>(`/api/delete-message/${message._id}`);
+
+   toast.message(response?.data?.message);
+   onMessageDelete(message._id);
+ }
   return (
     <Card>
       <CardHeader>
@@ -41,7 +57,7 @@ export const MessageCard = () => {
     </AlertDialogHeader>
     <AlertDialogFooter>
       <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction onClick={handeDeleteconfirm}>Continue</AlertDialogAction>
+      <AlertDialogAction onClick={handleDeleteConfirm}>Continue</AlertDialogAction>
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>
