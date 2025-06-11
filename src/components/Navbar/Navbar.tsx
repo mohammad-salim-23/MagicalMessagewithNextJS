@@ -12,7 +12,7 @@ export const Navbar = () => {
   return (
     <nav className="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
       <Link href="/">
-        <span className="text-xl font-bold text-green-600 hover:text-green-700 cursor-pointer">Magical Message</span>
+        <span className="text-xl font-bold text-teal-600 hover:text-teal-700 cursor-pointer tracking-tight">Magical Message</span>
       </Link>
 
       <div className="flex items-center gap-4">
@@ -31,7 +31,7 @@ export const Navbar = () => {
         ) : (
           <Link href="/sign-in">
             <Button 
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition duration-300"
+              className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded transition duration-300 cursor-pointer"
             >
               Login
             </Button>
