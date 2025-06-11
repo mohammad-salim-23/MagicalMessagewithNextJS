@@ -32,9 +32,16 @@ export const authOptions: NextAuthOptions = {
        }
        const isPasswordCorrect = await bcrypt.compare(credentials.password , user.password);
 
-       if(isPasswordCorrect){
-        return user;
-       }else{
+       if (isPasswordCorrect) {
+  return {
+    _id: (user as { _id: any })._id.toString(),
+    username: user.username,
+    email: user.email,
+    isVerified: user.isVerified,
+    isAcceptingMessages: user.isAccepttingMessage
+  };
+}
+       else{
         throw new Error('Incorrect password');
        }
         }catch(err:any){
@@ -46,19 +53,24 @@ export const authOptions: NextAuthOptions = {
 
   callbacks:{
      async jwt({ token, user }) {
-        token._id = user._id?.toString();
-        token.isVerified = user.isVerified;
-        token.isAcceptingMessages = user.isAcceptingMessages;
-        token.username = user.username;
-      return token
-    },
+  if (user) {
+    token._id = user._id?.toString();
+    token.isVerified = user.isVerified;
+    token.isAcceptingMessages = user.isAcceptingMessages;
+    token.username = user.username;
+  }
+  return token;
+},
      async session({ session, token }) {
-     if(token){
-        session.user._id = token._id
-        session.user.isVerified = token.isVerified;
-        session.user.isAcceptingMessages = token.isAcceptingMessages;
-        session.user.username = token.username;
-     }
+      if (token) {
+    session.user = {
+      ...session.user,
+      _id: token._id,
+      isVerified: token.isVerified,
+      isAcceptingMessages: token.isAcceptingMessages,
+      username: token.username,
+    };
+  }
       return session
     }
    

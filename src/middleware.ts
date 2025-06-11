@@ -1,40 +1,32 @@
-import { NextRequest,NextResponse } from 'next/server'
- import { getToken } from "next-auth/jwt"
-// This function can be marked `async` if using `await` inside
+import { NextRequest, NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
+
 export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request });
+  const url = request.nextUrl;
 
- const token = await getToken({req:request})
- const url = request.nextUrl
+  const isAuthPage = ['/sign-in', '/sign-up', '/verify'].some(path =>
+    url.pathname.startsWith(path)
+  );
+  const isProtectedPage = url.pathname.startsWith('/dashboard');
 
- if(token && (
-    url.pathname.startsWith('/sign-in') ||
-    url.pathname.startsWith('/sign-up') ||
-    url.pathname.startsWith('/verify') ||
-    url.pathname.startsWith('/') 
+  
+  if (token && isAuthPage) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
 
- )){
-     return NextResponse.redirect(new URL('/dashboard', request.url))
- }else{
-  // if(
-  //   // url.pathname.startsWith('/dashboard')
-  //   // url.pathname.startsWith('/verify') 
-  // ){
-  //   return NextResponse.redirect(new URL('/sign-in', request.url));
-  // }
+  if (!token && isProtectedPage) {
+    return NextResponse.redirect(new URL('/sign-in', request.url));
+  }
+
   return NextResponse.next();
-
-
 }
-}
-// See "Matching Paths" below to learn more
+
 export const config = {
   matcher: [
-     '/sign-in',
+    '/sign-in',
     '/sign-up',
-     '/dashboard/:path*',
-     '/verify/:path*',
-     
+    '/verify/:path*',
+    '/dashboard/:path*',
   ]
-}
-
-
+};

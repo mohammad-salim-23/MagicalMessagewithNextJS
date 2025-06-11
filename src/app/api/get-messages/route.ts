@@ -23,7 +23,7 @@ export async function GET(){
     try{
       
         const user = await UserModel.aggregate([
-            {$match : {id: userId}},
+            {$match : {_id: userId}},
             {$unwind: '$messages'},
             {$sort: {'messages.createdAt': -1}},
             {$group: {_id: '$_id', messages: {$push:'$messages'}}}
@@ -37,7 +37,7 @@ export async function GET(){
         return Response.json({
             success: true,
             message: "Messages retrieved successfully",
-            data: user[0].messages
+            messages: user[0].messages
         }, {status: 200});
     }catch(error){
       console.log("Failed to retrieve messages", error);
